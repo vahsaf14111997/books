@@ -1,0 +1,109 @@
+<h1 class="text-center">Bookshop</h1>
+<%= render partial: 'shared/modal' %>
+
+<table class="table table-bordered table-striped table-hover" style="width: 100%" id="mydatatable">
+            <thead>
+                <tr>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Name</th>
+                    <th class="text-center">Edition</th>
+                    <th class="text-center">Author</th>
+                    <th class="text-center">Actions</th>
+
+                </tr>
+            </thead>
+            <tbody id="bookbody"></tbody>
+            
+        </table>
+
+        <script>
+        $(document).ready(function(){
+            getAllBooks();
+            var dynamicURL = "";
+            var methodName = "";
+            $('#mydatatable').DataTable();
+            var book = {};
+
+
+            $('#addBook').on('click',function() {
+            book.name = $('#name').val();
+            book.edition = $('#edition').val();
+            book.author = $('#author').val();
+            var bookId = $('#id').val();
+            if (bookId){
+              dynamicURL = "https://616d498837f997001745d95a.mockapi.io/Books/"+bookId;
+              methodName = "PUT";
+            }
+            else{
+              dynamicURL = "https://616d498837f997001745d95a.mockapi.io/Books";
+              methodName = "POST";
+            }
+            var bookobj = JSON.stringify(book);
+            $.ajax({
+                url: dynamicURL,
+                method: methodName,
+                data: bookobj,
+                contentType: 'application/json; charset=utf-8',
+                success: function(data) {
+                    alert('saved successfully');
+                    getAllBooks();
+                    
+                },
+                error: function(error){
+                    alert("data not saved");
+                }
+            });
+        })
+            
+             
+        });
+        function getAllBooks(){
+            $.ajax({
+                url: "https://616d498837f997001745d95a.mockapi.io/Books/",
+                method: "GET",
+                dataType: "json",
+                success: function(data){
+                    var tablebody = $('#bookbody');
+                    tablebody.empty();
+                        $(data).each(function(index, book){                       
+                        tablebody.append('<tr><td class="text-center">'+book.id+'</td><td class="text-center">'+book.name+'</td><td class="text-center">'+book.edition+'</td><td class="text-center">'+book.author+'</td><td class="text-center"><button data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo" onclick="editBook('+book.id+')" class="btn btn-warning">Edit</button>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick="deleteBook('+book.id+')" class="btn btn-danger">Delete</button></td></tr>');
+                    });
+                },
+                error: function(error){
+                    alert(error);
+                }
+            });
+        }
+        function deleteBook(id){
+            $.ajax({
+                url: "https://616d498837f997001745d95a.mockapi.io/Books/"+id,
+                method: "DELETE",
+                success: function(){
+                    alert("Data has been deleted successfully");
+                },
+                error: function(error){
+                    alert(error);
+                }
+            });
+        }
+        
+        function editBook(id){
+            $.ajax({
+              url: "https://616d498837f997001745d95a.mockapi.io/Books/"+id,
+              method: "GET",
+              dataType: "json",
+              success: function (data){
+                $('#id').val(data.id);
+                $('#name').val(data.name);
+                $('#edition').val(data.edition);
+                $('#author').val(data.author);
+                getAllBooks();                
+              },
+              error: function(error){
+                alert(error);
+              }
+            });
+        }
+        </script>
+
+      
